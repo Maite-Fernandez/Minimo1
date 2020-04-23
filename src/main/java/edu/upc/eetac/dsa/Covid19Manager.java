@@ -7,7 +7,7 @@ public interface Covid19Manager {
 
      //Add a new case
      String addCase(String outbreakId,String name,String surname,String birthdate,int reportdate,int risklevel,String gender,String email,String telephone,String address,int classification);
-
+     String addCase(String outbreakId, Case c);
      //Get a case
     Case getCase(String caseId);
 

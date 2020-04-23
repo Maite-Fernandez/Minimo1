@@ -35,17 +35,23 @@ public class Covid19ManagerImpl implements Covid19Manager {
     }
 
     @Override
+    public String addCase(String outbreakId, Case c) {
+        this.caseList.add(c);
+        this.mapOutbreak.get(outbreakId).addCase(c);
+        return c.getId();
+    }
+
+    @Override
     public String addCase(String outbreakId, String name, String surname, String birthdate, int reportdate, int risklevel, String gender, String email, String telephone, String address, int classification) {
         Outbreak o = this.mapOutbreak.get(outbreakId);
         Case c = new Case(name, surname, birthdate, reportdate, risklevel, gender, email, telephone, address, classification);
         log.info("Add a new case to outbreak (" + outbreakId + ")");
         if (o != null) {
             log.info("Case added");
-            this.mapOutbreak.get(outbreakId).addCase(c);
-            this.caseList.add(c);
+            this.addCase(outbreakId,c);
             return c.getId();
         } else {
-            log.error("Not found outbreak" + outbreakId);
+            log.error("Not found outbreak " + outbreakId);
             return null;
         }
     }
@@ -100,15 +106,40 @@ public class Covid19ManagerImpl implements Covid19Manager {
     public List<Case> getSortedCases(String outbreakId) {
         List<Case> cases = this.mapOutbreak.get(outbreakId).getListCases();
         if (cases != null) {
-            class SortbyRisk implements Comparator<Case> {
+            //Comparator for report date
+            class SortbyReportDate implements Comparator<Case> {
                 public int compare(Case c1, Case c2) {
-                    //Compare prices in descending order
-                    return c1.getRisklevel() - c2.getRisklevel();
+                    //Compare report dates in descending order
+                    return Integer.compare(c1.getReportdate(), c2.getReportdate());
+                    //DATE OBJECT FOR MORE ADVANCED VERSION
+                    /*
+                    public static Date createDate(String date) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                        Date ret = null;
+                        try {
+                            ret = sdf.parse(date);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                            return ret;
+                    }
+                     */
                 }
             }
-            Comparator c = Collections.reverseOrder(new SortbyRisk());
-            Collections.sort(cases, c);
-            log.info("List of cases by risk in descending order: " + cases.toString());
+            Comparator c2 = Collections.reverseOrder(new SortbyReportDate());
+            Collections.sort(cases,c2);
+            log.info("List of cases by report date in descending order:" + cases.toString());
+
+            class SortbyClassification implements Comparator<Case> {
+                public int compare(Case c1, Case c2) {
+                    //Compare classification in descending order
+                    return c1.getClassification() - c2.getClassification();
+                }
+            }
+            Comparator c1 = Collections.reverseOrder(new SortbyClassification());
+            Collections.sort(cases, c1);
+
+            log.info("List of cases by classification in descending order: " + cases.toString());
             return cases; //200 OK PETITION
         } else {
             log.warn("The list of cases is empty");

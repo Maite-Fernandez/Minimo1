@@ -35,10 +35,10 @@ public class Covid19ManagerService {
 
             //Adding cases to the outbreaks
             this.manager.addCase(outbreakId1,"mary","smith","04/06/1989",11032020,2,"female","marysmith@gmail.com","+34663307504","Imaginary Street 7",2);
-            this.manager.addCase(outbreakId1,"peter","pan","04/07/1970",17032020,1,"male","peterpan@gmail.com","+34663301424","Neverland Street 8",1);
-            this.manager.addCase(outbreakId2,"john","wick","05/11/1994",23042020,3,"male","johnwick@gmail.com","+34663485504","Lollipop Street 11",2);
-            this.manager.addCase(outbreakId2,"lisa","simpson","23/10/1959",14042020,1,"female","lisasimpson@gmail.com","+34669487504","Candy Street 19",0);
-            this.manager.addCase(outbreakId2,"mike","johnson","27/08/1979",12042020,2,"male","mikejohnson@gmail.com","+34663395604","Box Street 7",1);
+            this.manager.addCase(outbreakId1,"peter","pan","04/07/1970",12032020,1,"male","peterpan@gmail.com","+34663301424","Neverland Street 8",0);
+            this.manager.addCase(outbreakId2,"john","wick","05/11/1994",7232020,3,"male","johnwick@gmail.com","+34663485504","Lollipop Street 11",1);
+            this.manager.addCase(outbreakId2,"lisa","simpson","12/23/1959",5042020,1,"female","lisasimpson@gmail.com","+34669487504","Candy Street 19",2);
+            this.manager.addCase(outbreakId2,"mike","johnson","11/14/1979",11042020,2,"male","mikejohnson@gmail.com","+34663395604","Box Street 7",1);
         }
     }
     //When multiple GET, PUT, POSTS & DELETE EXIST on the same SERVICE, path must be aggregated
@@ -90,19 +90,31 @@ public class Covid19ManagerService {
     @PUT
     @ApiOperation(value = "Add cases to an outbreak", notes = "Edits an existing outbreak")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful"),
+            @ApiResponse(code = 201, message = "Successful", response=Outbreak.class),
             @ApiResponse(code = 404, message = "Outbreak not found"),
     })
-    @Path("/addCaseToOutbreak/")
-    public Response addProductToOrder(@PathParam("outbreakId") String outbreakId,@PathParam("name") String name,
-                                      @PathParam("surname") String surname,@PathParam("birthdate") String birthdate,
-                                      @PathParam("reportdate") int reportdate, @PathParam("risklevel") int risklevel,
-                                      @PathParam("gender") String gender, @PathParam("email") String email,
-                                      @PathParam("telephone") String telephone,@PathParam("address") String address,
-                                      @PathParam("classification") int classification) {
-        String caseId = this.manager.addCase(outbreakId,name,surname,birthdate,reportdate,risklevel,gender,email,telephone,address,classification);
+    @Path("/addCaseToOutbreak")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addProductToOutbreak(CaseToOutbreak caseToOutbreak) {
+        logger.info("AddCaseToOutbreak [outbreakId= "+caseToOutbreak.getOutbreakId()+ ", name= "+caseToOutbreak.getInsertCase().getName()+ "]");
+       String outbreak = caseToOutbreak.getOutbreakId();
+        Case insertCase=caseToOutbreak.getInsertCase();
+        insertCase.setId( RandomUtils.getId());
+        String caseId = this.manager.addCase(outbreak,insertCase);
         if (caseId == null) return Response.status(404).build();
         return Response.status(201).build();
+    }
+    //Ad-hoc object
+    public static class CaseToOutbreak{
+        String outbreakId;
+        Case insertCase;
+        //Empty constructor
+        public  CaseToOutbreak(){}
+        //Setters and Getters
+        public String getOutbreakId() { return outbreakId; }
+        public void setOutbreakId(String outbreakId) { this.outbreakId = outbreakId; }
+        public Case getInsertCase() { return insertCase; }
+        public void setInsertCase(Case insertCase) { this.insertCase = insertCase; }
     }
 
 }
